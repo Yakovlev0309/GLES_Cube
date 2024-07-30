@@ -2,6 +2,9 @@
 #include <string>
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 const char* vertexShaderSource =
         "# version 300 es\n"
@@ -10,8 +13,11 @@ const char* vertexShaderSource =
         "layout (location = 2) in vec2 aTex;\n"
         "out vec3 color;\n"
         "out vec2 texCoord;\n"
+        "uniform mat4 model;\n"
+        "uniform mat4 view;\n"
+        "uniform mat4 proj;\n"
         "void main() {\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "   gl_Position = proj * view * model * vec4(aPos, 1.0);\n"
         "   color = aColor;\n"
         "   texCoord = aTex;\n"
         "}\n";
@@ -198,6 +204,21 @@ void renderFrame()
 
     // Активация шейдера
     glUseProgram(shaderProgram);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 proj = glm::mat4(1.0f);
+
+    model = glm::rotate(model, glm::radians(rotation), glm::vec3(1.0f, 1.0f, 1.0f));
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
+    proj = glm::perspective(glm::radians(60.0f), (float)width / height, 0.1f, 100.0f);
+
+    int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    int projLoc = glGetUniformLocation(shaderProgram, "proj");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
     glBindVertexArray(vaoID);
     glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, indices);
