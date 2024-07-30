@@ -17,6 +17,8 @@ int width, height;
 VAO vao;
 VBO vbo;
 EBO ebo;
+float delta_x;
+float delta_y;
 
 GLuint loadShader(GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
@@ -99,8 +101,8 @@ void setupGraphics(int w, int h)
     ebo = EBO(indices, sizeof(indices));
 
     // Привязка атрибутов
-    vao.linkAttrib(vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     vao.linkAttrib(vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+    vao.linkAttrib(vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     vao.linkAttrib(vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
     glEnable(GL_DEPTH_TEST);
@@ -108,22 +110,20 @@ void setupGraphics(int w, int h)
 
 void renderFrame()
 {
-    static float rotation;
-    rotation += 5.0f;
-
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     // Активация шейдера
     glUseProgram(shaderProgram);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 proj = glm::mat4(1.0f);
+    auto model = glm::mat4(1.0f);
+    auto view = glm::mat4(1.0f);
+    auto proj = glm::mat4(1.0f);
 
-    model = glm::rotate(model, glm::radians(rotation), glm::vec3(1.0f, 1.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(std::abs(delta_x)), glm::vec3(1.0f, delta_x, 1.0f));
+    model = glm::rotate(model, glm::radians(std::abs(delta_y)), glm::vec3(delta_y, 1.0f, 1.0f));
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
-    proj = glm::perspective(glm::radians(60.0f), (float)width / height, 0.1f, 100.0f);
+    proj = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 100.0f);
 
     int modelLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -158,4 +158,13 @@ Java_com_example_gles_1cube_JNILib_step(
         JNIEnv* env,
         jclass /* this */) {
     renderFrame();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gles_1cube_JNILib_move(
+        JNIEnv* env,
+        jclass /* this */,
+        float start_x, float start_y, float x, float y) {
+    delta_x = x - start_x;
+    delta_y = y - start_y;
 }

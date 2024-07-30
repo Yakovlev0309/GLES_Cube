@@ -257,6 +257,10 @@ public class JNIView extends GLSurfaceView {
         private int[] mValue = new int[1];
     }
 
+    public void moveEvent(float startX, float startY, float x, float y) {
+        JNILib.move(startX, startY, x, y);
+    }
+
     private static class Renderer implements GLSurfaceView.Renderer {
         public void onDrawFrame(GL10 gl) {
             JNILib.step();
