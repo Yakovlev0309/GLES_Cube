@@ -6,82 +6,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-const char* vertexShaderSource =
-        "# version 300 es\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec3 aColor;\n"
-        "layout (location = 2) in vec2 aTex;\n"
-        "out vec3 color;\n"
-        "out vec2 texCoord;\n"
-        "uniform mat4 model;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 proj;\n"
-        "void main() {\n"
-        "   gl_Position = proj * view * model * vec4(aPos, 1.0);\n"
-        "   color = aColor;\n"
-        "   texCoord = aTex;\n"
-        "}\n";
+#include "cube.h"
+#include "shaders.h"
 
-const char* fragmentShaderSource =
-        "# version 300 es\n"
-        "precision mediump float;\n"
-        "out vec4 FragColor;\n"
-        "in vec3 color;\n"
-        "in vec2 texCoord;\n"
-        "void main() {\n"
-        "   FragColor = vec4(color, 1.0f);\n"
-        "}\n";
-
-// Вершины
-GLfloat vertices[] =
-        {    // Координаты                      Цвета			                 Координаты текстур
-                -0.25f,  0.25f, -0.25f,         255.0f, 0.0f, 0.0f,             0.0f, 0.0f,
-                0.25f,  0.25f, -0.25f,         255.0f, 0.0f, 0.0f,             5.0f, 0.0f,
-                -0.25f, -0.25f, -0.25f,         255.0f, 0.0f, 0.0f,             0.0f, 0.0f,
-                0.25f, -0.25f, -0.25f,         255.0f, 0.0f, 0.0f,             5.0f, 0.0f,
-
-                -0.25f,  0.25f,  0.25f,         0.0f, 255.0f, 0.0f,             2.5f, 5.0f,
-                0.25f,  0.25f,  0.25f,         0.0f, 255.0f, 0.0f,             0.0f, 0.0f,
-                -0.25f, -0.25f,  0.25f,         0.0f, 255.0f, 0.0f,             5.0f, 0.0f,
-                0.25f, -0.25f,  0.25f,         0.0f, 255.0f, 0.0f,             0.0f, 0.0f,
-
-                -0.25f,  0.25f, -0.25f,         0.0f, 0.0f, 255.0f,             0.0f, 0.0f,
-                -0.25f, -0.25f, -0.25f,         0.0f, 0.0f, 255.0f,             5.0f, 0.0f,
-                -0.25f, -0.25f,  0.25f,         0.0f, 0.0f, 255.0f,             0.0f, 0.0f,
-                -0.25f,  0.25f,  0.25f,         0.0f, 0.0f, 255.0f,             5.0f, 0.0f,
-
-                0.25f,  0.25f, -0.25f,         255.0f, 255.0f, 255.0f,         2.5f, 5.0f,
-                0.25f, -0.25f, -0.25f,         255.0f, 255.0f, 255.0f,         0.0f, 0.0f,
-                0.25f, -0.25f,  0.25f,         255.0f, 255.0f, 255.0f,         5.0f, 0.0f,
-                0.25f,  0.25f,  0.25f,         255.0f, 255.0f, 255.0f,         0.0f, 0.0f,
-
-                -0.25f, -0.25f, -0.25f,         255.0f, 255.0f, 0.0f,           0.0f, 0.0f,
-                -0.25f, -0.25f,  0.25f,         255.0f, 255.0f, 0.0f,           5.0f, 0.0f,
-                0.25f, -0.25f,  0.25f,         255.0f, 255.0f, 0.0f,           0.0f, 0.0f,
-                0.25f, -0.25f, -0.25f,         255.0f, 255.0f, 0.0f,           5.0f, 0.0f,
-
-                -0.25f,  0.25f, -0.25f,         0.0f, 255.0f, 255.0f,           2.5f, 5.0f,
-                -0.25f,  0.25f,  0.25f,         0.0f, 255.0f, 255.0f,           0.0f, 0.0f,
-                0.25f,  0.25f,  0.25f,         0.0f, 255.0f, 255.0f,           5.0f, 0.0f,
-                0.25f,  0.25f, -0.25f,         0.0f, 255.0f, 255.0f,           0.0f, 0.0f,
-        };
-// Индексы вершин
-GLuint indices[] =
-        {
-                0, 2, 3,
-                0, 1, 3,
-                4, 6, 7,
-                4, 5, 7,
-                8, 9, 10,
-                11, 8, 10,
-                12, 13, 14,
-                15, 12, 14,
-                16, 17, 18,
-                16, 19, 18,
-                20, 21, 22,
-                20, 23, 22
-        };
-
+GLuint shaderProgram;
+GLuint vaoID, vboID, eboID;
+int width, height;
 
 GLuint loadShader(GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
@@ -141,10 +71,6 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
     }
     return program;
 }
-
-GLuint shaderProgram;
-GLuint vaoID, vboID, eboID;
-int width, height;
 
 void setupGraphics(int w, int h)
 {
