@@ -13,6 +13,8 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         ebo.h
         ebo.cpp
         globject.h
+        shader.h
+        shader.cpp
         )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/libraries/include)
