@@ -3,7 +3,17 @@ cmake_minimum_required(VERSION 3.22.1)
 project("gles_cube")
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        cube.cpp)
+        cube.cpp
+        cube.h
+        shaders.h
+        vao.h
+        vao.cpp
+        vbo.h
+        vbo.cpp
+        ebo.h
+        ebo.cpp
+        globject.h
+        )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/libraries/include)
 

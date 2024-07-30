@@ -8,10 +8,15 @@
 
 #include "cube.h"
 #include "shaders.h"
+#include "vao.h"
+#include "vbo.h"
+#include "ebo.h"
 
 GLuint shaderProgram;
-GLuint vaoID, vboID, eboID;
 int width, height;
+VAO vao;
+VBO vbo;
+EBO ebo;
 
 GLuint loadShader(GLenum shaderType, const char* pSource) {
     GLuint shader = glCreateShader(shaderType);
@@ -85,37 +90,18 @@ void setupGraphics(int w, int h)
     glViewport(0, 0, width, height);
 
     // VAO
-    glBindVertexArray(vaoID);
+    vao.bind();
 
     // VBO
-    glGenBuffers(1, &vboID);
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    vbo = VBO(vertices, sizeof(vertices));
 
     // EBO
-    glGenBuffers(1, &eboID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    ebo = EBO(indices, sizeof(indices));
 
     // Привязка атрибутов
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    vao.linkAttrib(vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    vao.linkAttrib(vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+    vao.linkAttrib(vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -146,15 +132,15 @@ void renderFrame()
     int projLoc = glGetUniformLocation(shaderProgram, "proj");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
-    glBindVertexArray(vaoID);
-    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, indices);
+    vao.bind();
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
 }
 
 void deleteObjects()
 {
-    glDeleteVertexArrays(1, &vaoID);
-    glDeleteBuffers(1, &vboID);
-    glDeleteBuffers(1, &eboID);
+    vao.destroy();
+    vbo.destroy();
+    ebo.destroy();
     glDeleteProgram(shaderProgram);
 }
 
